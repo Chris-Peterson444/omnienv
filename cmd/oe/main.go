@@ -25,7 +25,7 @@ func Run() error {
 	}
 
 	setupLogging(opts.Verbose)
-	slog.Debug("cmdline", "opts", opts)
+	slog.Debug("cmdline", "opts", opts) // #nosec G706 — debug-only local CLI tool, negligible injection risk
 
 	cfg, err := omnienv.GetConfig()
 	if err != nil {
