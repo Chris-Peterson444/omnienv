@@ -1,3 +1,5 @@
 .coverprofile
 /oe
 /oe-launch
+.pytest_cache/
+__pycache__/

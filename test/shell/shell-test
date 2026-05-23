@@ -6,12 +6,16 @@ pitfalls.  Test for the known challenges in getting all this correct."""
 
 import os
 import unittest
+import subprocess
 
 
 class Tests(unittest.TestCase):
     def test_pts_stat(self):
-        stat = os.stat("/dev/pts/2")
-        self.assertEqual(os.getuid(), stat.st_uid, "/dev/pts/2 uid")
+        # some methods of creating the shell as user result in incorrect
+        # ownership of the pseudo terminal.
+        tty = subprocess.check_output("tty").decode().strip()
+        stat = os.stat(tty)
+        self.assertEqual(os.getuid(), stat.st_uid, f"{tty} uid")
 
     def test_has_home(self):
         self.assertTrue(os.environ["HOME"])
