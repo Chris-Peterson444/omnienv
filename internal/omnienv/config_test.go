@@ -255,3 +255,10 @@ system:
 	err := yaml.Unmarshal(data, &cfg)
 	assert.ErrorContains(t, err, "multiple system keys")
 }
+
+func TestUnmarshalSystemDictFails(t *testing.T) {
+	data := []byte(`system: [a, b]`)
+	var cfg Config
+	err := yaml.Unmarshal(data, &cfg)
+	assert.ErrorContains(t, err, "cannot unmarshal")
+}
