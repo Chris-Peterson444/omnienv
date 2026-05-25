@@ -428,6 +428,19 @@ func TestLxcLaunchFails(t *testing.T) {
 	assert.ErrorContains(t, err, "failed to create instance")
 }
 
+func TestLxcLaunchVM(t *testing.T) {
+	var args []string
+	restoreCmd := Patch(&command, func(name string, arg ...string) *exec.Cmd {
+		args = append([]string{name}, arg...)
+		return exec.Command("/bin/true")
+	})
+	defer restoreCmd()
+
+	app := App{Config: Config{Label: "l", System: NewSystem("s"), Virtualization: "vm"}}
+	assert.Nil(t, app.lxcLaunch())
+	assert.Contains(t, args, "--vm")
+}
+
 func TestLaunchWaitFails(t *testing.T) {
 	cmdCallCount := 0
 	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
