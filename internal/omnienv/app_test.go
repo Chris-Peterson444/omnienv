@@ -186,7 +186,7 @@ func TestWaitVMStrangeExitCode(t *testing.T) {
 	defer restoreCmd()
 	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
 	err := app.Wait()
-	assert.ErrorContains(t, err, "strange exit code 1")
+	assert.ErrorContains(t, err, "strange lxc exec exit code 1")
 }
 
 func TestWaitVMTimeout(t *testing.T) {

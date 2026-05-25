@@ -94,7 +94,7 @@ func (app App) isVM() (bool, error) {
 func (app App) Wait() error {
 	vm, err := app.isVM()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to wait for instance: %w", err)
 	}
 	if !vm {
 		return nil
@@ -116,11 +116,11 @@ func (app App) Wait() error {
 		}
 
 		if ec := exitError.ExitCode(); ec != 255 {
-			return fmt.Errorf("strange exit code %d", ec)
+			return fmt.Errorf("failed to wait for instance: strange lxc exec exit code %d", ec)
 		}
 
 		if i >= 300 {
-			return fmt.Errorf("timed out waiting for %s to become reachable", app.name())
+			return fmt.Errorf("failed to wait for instance: timed out waiting for %s to become reachable", app.name())
 		}
 
 		timeSleep(time.Second)
@@ -231,7 +231,7 @@ func (app App) Launch() error {
 	}
 
 	if err := app.Wait(); err != nil {
-		return fmt.Errorf("failed to wait for instance: %w", err)
+		return err
 	}
 
 	if err := app.usePty(); err != nil {
@@ -278,7 +278,7 @@ func (app App) Shell() error {
 	}
 
 	if err := app.Wait(); err != nil {
-		return fmt.Errorf("failed to wait for instance: %w", err)
+		return err
 	}
 
 	// determine where we are relative to RootDir, then adjust that
