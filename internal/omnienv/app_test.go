@@ -356,6 +356,29 @@ func TestShellLxcExecFails(t *testing.T) {
 	assert.ErrorContains(t, err, "failed to lxc exec")
 }
 
+func TestShellWithParams(t *testing.T) {
+	cmdCallCount := 0
+	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
+		cmdCallCount++
+		switch cmdCallCount {
+		case 1:
+			return exec.Command("/bin/echo", "Status: RUNNING") // StartIfNeeded
+		case 2:
+			return exec.Command("/bin/echo", "Type: container") // Wait → isVM
+		case 3:
+			return exec.Command("/bin/true") // lxcExec
+		default:
+			return exec.Command("/bin/true")
+		}
+	})
+	defer restoreCmd()
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		Opts:   Opts{Params: []string{"echo", "hi"}},
+	}
+	assert.Nil(t, app.Shell())
+}
+
 func TestLaunchContainerOk(t *testing.T) {
 	cmdCallCount := 0
 	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
