@@ -242,6 +242,13 @@ func (app App) Launch() error {
 		return fmt.Errorf("LP #1878225 workaround failure: %w", err)
 	}
 
+	if err := app.waitCloudInit(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (app App) waitCloudInit() error {
 	if err := app.lxcExec("cloud-init", "status", "--wait"); err != nil {
 		return fmt.Errorf("cloud-init failure: %w", err)
 	}
