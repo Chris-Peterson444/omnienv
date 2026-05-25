@@ -357,19 +357,14 @@ func TestLaunchContainerOk(t *testing.T) {
 	assert.Nil(t, app.Launch())
 }
 
-func TestLaunchLaunchFails(t *testing.T) {
+func TestLxcLaunchFails(t *testing.T) {
 	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
 		return exec.Command("/bin/false")
 	})
 	defer restoreCmd()
 
-	restoreCmdCtx := Patch(&commandContext, func(_ context.Context, _ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/echo", "Debian")
-	})
-	defer restoreCmdCtx()
-
 	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
-	err := app.Launch()
+	err := app.lxcLaunch()
 	assert.ErrorContains(t, err, "failed to create instance")
 }
 

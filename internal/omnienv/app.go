@@ -207,7 +207,7 @@ func (app App) lp1878225Quirk() error {
 	return nil
 }
 
-func (app App) Launch() error {
+func (app App) lxcLaunch() error {
 	args := []string{"lxc", "launch", app.launchImage(), app.name()}
 	if app.Config.isVM() {
 		args = append(args, "--vm")
@@ -221,6 +221,13 @@ func (app App) Launch() error {
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to create instance: %w", err)
+	}
+	return nil
+}
+
+func (app App) Launch() error {
+	if err := app.lxcLaunch(); err != nil {
+		return err
 	}
 
 	if err := app.Wait(); err != nil {
