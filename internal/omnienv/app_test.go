@@ -124,6 +124,16 @@ func TestStartIfNeededStopped(t *testing.T) {
 	assert.Nil(t, app.StartIfNeeded())
 }
 
+func TestStartFails(t *testing.T) {
+	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
+		return exec.Command("/bin/false")
+	})
+	defer restoreCmd()
+	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	err := app.start()
+	assert.ErrorContains(t, err, "failed to start instance")
+}
+
 var isVMTests = []struct {
 	summary string
 	cmd     *exec.Cmd
