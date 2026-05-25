@@ -234,11 +234,8 @@ func (app App) Launch() error {
 		return fmt.Errorf("failed to wait for instance: %w", err)
 	}
 
-	use_pty := []string{
-		"sh", "-c", "echo 'Defaults use_pty' > /etc/sudoers.d/use_pty",
-	}
-	if err := app.lxcExec(use_pty...); err != nil {
-		return fmt.Errorf("use_pty setup failure: %w", err)
+	if err := app.usePty(); err != nil {
+		return err
 	}
 
 	if err := app.lp1878225Quirk(); err != nil {
@@ -247,6 +244,16 @@ func (app App) Launch() error {
 
 	if err := app.lxcExec("cloud-init", "status", "--wait"); err != nil {
 		return fmt.Errorf("cloud-init failure: %w", err)
+	}
+	return nil
+}
+
+func (app App) usePty() error {
+	cmd := []string{
+		"sh", "-c", "echo 'Defaults use_pty' > /etc/sudoers.d/use_pty",
+	}
+	if err := app.lxcExec(cmd...); err != nil {
+		return fmt.Errorf("use_pty setup failure: %w", err)
 	}
 	return nil
 }
