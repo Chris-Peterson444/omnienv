@@ -275,10 +275,6 @@ var isUbuntuJammyTests = []struct {
 	cmd:     exec.Command("/bin/echo", "Debian"),
 	want:    false,
 }, {
-	summary: "command fails",
-	cmd:     exec.Command("/bin/false"),
-	want:    false,
-}, {
 	summary: "wrong version",
 	cmd:     exec.Command("/bin/printf", "Distributor ID: Ubuntu\nRelease: 24.04"),
 	want:    false,
@@ -589,6 +585,17 @@ func TestLp1878225QuirkNotJammy(t *testing.T) {
 	defer restoreCmdCtx()
 	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
 	assert.Nil(t, app.lp1878225Quirk())
+}
+
+func TestLp1878225QuirkIsUbuntuJammyFails(t *testing.T) {
+	restoreCmdCtx := Patch(&commandContext, func(_ context.Context, _ string, _ ...string) *exec.Cmd {
+		return exec.Command("/bin/false")
+	})
+	defer restoreCmdCtx()
+
+	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	err := app.lp1878225Quirk()
+	assert.ErrorContains(t, err, "LP: #1878225 workaround failure")
 }
 
 func TestLp1878225QuirkBusWaitFails(t *testing.T) {

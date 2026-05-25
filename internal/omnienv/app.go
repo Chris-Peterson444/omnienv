@@ -160,7 +160,7 @@ func (app App) isUbuntuJammy() (bool, error) {
 
 	out, err := app.lxcOutput(ctx, "lsb_release", "-a")
 	if err != nil {
-		return false, nil
+		return false, err
 	}
 
 	var distrib, release string
