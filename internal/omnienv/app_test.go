@@ -47,6 +47,41 @@ func TestName(t *testing.T) {
 	}
 }
 
+var lxcInstanceStatusTests = []struct {
+	summary string
+	cmd     *exec.Cmd
+	status  string
+	errMsg  string
+}{{
+	summary: "ok",
+	cmd:     exec.Command("/bin/echo", "Status: RUNNING"),
+	status:  "RUNNING",
+}, {
+	summary: "info fails",
+	cmd:     exec.Command("/bin/false"),
+	errMsg:  "failed to get instance info",
+}, {
+	summary: "no status",
+	cmd:     exec.Command("/bin/echo", "just some output"),
+	errMsg:  "could not determine status",
+}}
+
+func TestLxcInstanceStatus(t *testing.T) {
+	for _, test := range lxcInstanceStatusTests {
+		restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
+			return test.cmd
+		})
+		status, err := App{Config: Config{Label: "l", System: NewSystem("s")}}.lxcInstanceStatus()
+		restoreCmd()
+		if test.errMsg != "" {
+			assert.ErrorContains(t, err, test.errMsg, test.summary)
+		} else {
+			assert.Nil(t, err, test.summary)
+			assert.Equal(t, test.status, status, test.summary)
+		}
+	}
+}
+
 var startIfNeededTests = []struct {
 	summary string
 	cmd     *exec.Cmd
@@ -58,14 +93,6 @@ var startIfNeededTests = []struct {
 	summary: "unknown",
 	cmd:     exec.Command("/bin/echo", "Status: UNKNOWN"),
 	errMsg:  "no handler for Status UNKNOWN",
-}, {
-	summary: "info fails",
-	cmd:     exec.Command("/bin/false"),
-	errMsg:  "failed to get instance info",
-}, {
-	summary: "no status",
-	cmd:     exec.Command("/bin/echo", "just some output"),
-	errMsg:  "could not determine status",
 }}
 
 func TestStartIfNeeded(t *testing.T) {

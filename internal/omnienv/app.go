@@ -45,23 +45,26 @@ func (app App) start() error {
 	return nil
 }
 
-func (app App) StartIfNeeded() error {
+func (app App) lxcInstanceStatus() (string, error) {
 	cmd := command("lxc", "info", app.name())
 	slog.Debug("run", "command", cmd.Args)
 	out, err := cmd.Output()
 	if err != nil {
-		return fmt.Errorf("failed to get instance info: %w", err)
+		return "", fmt.Errorf("failed to get instance info: %w", err)
 	}
 
-	var status string
 	for _, line := range strings.Split(string(out), "\n") {
 		if after, found := strings.CutPrefix(line, "Status: "); found {
-			status = after
-			break
+			return after, nil
 		}
 	}
-	if status == "" {
-		return fmt.Errorf("could not determine status of instance %s", app.name())
+	return "", fmt.Errorf("could not determine status of instance %s", app.name())
+}
+
+func (app App) StartIfNeeded() error {
+	status, err := app.lxcInstanceStatus()
+	if err != nil {
+		return err
 	}
 
 	slog.Debug("startIfNeeded", "instanceStatus", status)
