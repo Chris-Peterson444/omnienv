@@ -179,7 +179,7 @@ func (app App) isUbuntuJammy() (bool, error) {
 func (app App) lp1878225Quirk() error {
 	affected, err := app.isUbuntuJammy()
 	if err != nil {
-		return fmt.Errorf("LP #1878225 workaround failure: %w", err)
+		return fmt.Errorf("LP: #1878225 workaround failure: %w", err)
 	}
 	if !affected {
 		slog.Debug("skipping LP: #1878225 quirk")
@@ -199,12 +199,12 @@ func (app App) lp1878225Quirk() error {
 	`
 
 	if err := app.lxcExec("sh", "-c", script); err != nil {
-		return fmt.Errorf("LP #1878225 workaround failure: bus wait failure: %w", err)
+		return fmt.Errorf("LP: #1878225 workaround failure: bus wait failure: %w", err)
 	}
 
 	// the actual workaround
 	if err := app.lxcExec("systemctl", "stop", "snapd.seeded.service"); err != nil {
-		return fmt.Errorf("LP #1878225 workaround failure: seeded stop failure: %w", err)
+		return fmt.Errorf("LP: #1878225 workaround failure: seeded stop failure: %w", err)
 	}
 
 	return nil

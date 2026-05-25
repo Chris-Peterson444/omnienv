@@ -544,7 +544,7 @@ func TestLaunchQuirkFails(t *testing.T) {
 
 	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
 	err := app.Launch()
-	assert.ErrorContains(t, err, "LP #1878225 workaround failure")
+	assert.ErrorContains(t, err, "LP: #1878225 workaround failure")
 }
 
 var sudoLoginTests = []struct {
