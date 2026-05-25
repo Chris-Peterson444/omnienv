@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log/slog"
+	"log"
 	"os"
 	"runtime/debug"
 
@@ -25,7 +25,10 @@ func Run() error {
 	}
 
 	setupLogging(opts.Verbose)
-	slog.Debug("cmdline", "opts", opts) // #nosec G706 — debug-only local CLI tool, negligible injection risk
+	if omnienv.Verbose {
+		// G706 regards log injection, but we log to stderr
+		log.Printf("DEBUG: cmdline opts=%+v", opts) // #nosec G706
+	}
 
 	cfg, err := omnienv.GetConfig()
 	if err != nil {
@@ -49,7 +52,7 @@ func Run() error {
 
 func main() {
 	if err := Run(); err != nil {
-		slog.Error("fatal error", "error", err)
+		log.Printf("ERROR: fatal error: %v", err)
 		os.Exit(1)
 	}
 }

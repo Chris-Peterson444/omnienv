@@ -1,13 +1,10 @@
 package omnienv
 
-import (
-	"log/slog"
-	"os"
-)
+import "os"
 
 func run(args ...string) error {
 	cmd := command(args[0], args[1:]...)
-	slog.Debug("run", "command", args)
+	debugLog("run command=%v", args)
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr
@@ -16,6 +13,6 @@ func run(args ...string) error {
 
 func runDevNull(args ...string) error {
 	cmd := command(args[0], args[1:]...)
-	slog.Debug("run", "command", args)
+	debugLog("run command=%v", args)
 	return cmd.Run()
 }

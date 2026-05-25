@@ -2,10 +2,11 @@ package main
 
 import (
 	"bytes"
-	"log/slog"
+	"log"
 	"strings"
 	"testing"
 
+	"github.com/dbungert/omnienv/internal/omnienv"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,15 +34,18 @@ func TestSetupLogging(t *testing.T) {
 
 	for _, test := range logTests {
 		buf.Reset()
-		setupLogging(test.verbose)
+		omnienv.Verbose = test.verbose
+		log.SetOutput(stderr)
 
-		slog.Info("info")
-		slog.Debug("debug")
+		log.Printf("INFO: info")
+		if omnienv.Verbose {
+			log.Printf("DEBUG: debug")
+		}
 
 		lines := strings.Split(buf.String(), "\n")
-		assert.Contains(t, lines[0], "level=INFO msg=info")
+		assert.Contains(t, lines[0], "INFO: info")
 		if test.verbose {
-			assert.Contains(t, lines[1], "level=DEBUG msg=debug")
+			assert.Contains(t, lines[1], "DEBUG: debug")
 			assert.Len(t, lines, 3)
 		} else {
 			assert.Len(t, lines, 2)

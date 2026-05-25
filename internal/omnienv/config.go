@@ -2,7 +2,7 @@ package omnienv
 
 import (
 	"errors"
-	"log/slog"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -171,12 +171,12 @@ func loadConfig(path string) (Config, error) {
 	}
 
 	if cfg.Project != "" {
-		slog.Warn("unsupported key", "project", cfg.Project)
+		log.Printf("WARN: unsupported key project=%s", cfg.Project)
 	}
 	if cfg.Series != "" {
-		slog.Warn("unsupported key", "series", cfg.Series)
+		log.Printf("WARN: unsupported key series=%s", cfg.Series)
 	}
-	slog.Debug("loadConfig", "config", cfg)
+	debugLog("loadConfig config=%+v", cfg)
 	return cfg, nil
 }
 

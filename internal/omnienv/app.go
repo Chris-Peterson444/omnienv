@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
@@ -38,7 +37,7 @@ func (app App) name() string {
 
 func (app App) start() error {
 	args := []string{"lxc", "start", app.name()}
-	slog.Debug("run", "command", args)
+	debugLog("run command=%v", args)
 	if err := run(args...); err != nil {
 		return fmt.Errorf("failed to start instance: %w", err)
 	}
@@ -47,7 +46,7 @@ func (app App) start() error {
 
 func (app App) lxcInstanceStatus() (string, error) {
 	cmd := command("lxc", "info", app.name())
-	slog.Debug("run", "command", cmd.Args)
+	debugLog("run command=%v", cmd.Args)
 	out, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to get instance info: %w", err)
@@ -67,7 +66,7 @@ func (app App) StartIfNeeded() error {
 		return err
 	}
 
-	slog.Debug("startIfNeeded", "instanceStatus", status)
+	debugLog("startIfNeeded instanceStatus=%s", status)
 	switch status {
 	case "STOPPED":
 		return app.start()
@@ -80,7 +79,7 @@ func (app App) StartIfNeeded() error {
 
 func (app App) isVM() (bool, error) {
 	cmd := command("lxc", "info", app.name())
-	slog.Debug("run", "command", cmd.Args)
+	debugLog("run command=%v", cmd.Args)
 	out, err := cmd.Output()
 	if err != nil {
 		return false, fmt.Errorf("failed to get instance info: %w", err)
@@ -139,7 +138,7 @@ func (app App) lxcExec(args ...string) error {
 func (app App) lxcOutput(ctx context.Context, args ...string) (string, error) {
 	cmd := append([]string{"lxc", "exec", app.name(), "--"}, args...)
 	cc := commandContext(ctx, cmd[0], cmd[1:]...)
-	slog.Debug("run", "command", cc.Args)
+	debugLog("run command=%v", cc.Args)
 	out, err := cc.Output()
 	if err != nil {
 		return "", err
@@ -182,7 +181,7 @@ func (app App) lp1878225Quirk() error {
 		return fmt.Errorf("LP: #1878225 workaround failure: %w", err)
 	}
 	if !affected {
-		slog.Debug("skipping LP: #1878225 quirk")
+		debugLog("skipping LP: #1878225 quirk")
 		return nil
 	}
 
@@ -217,7 +216,7 @@ func (app App) lxcLaunch() error {
 	}
 
 	cmd := command(args[0], args[1:]...)
-	slog.Debug("run", "command", args)
+	debugLog("run command=%v", args)
 	cmd.Stdout = os.Stdout
 	user := CurrentUserInfo()
 	cmd.Stdin = bytes.NewReader([]byte(app.Config.lxdLaunchConfig(user)))
