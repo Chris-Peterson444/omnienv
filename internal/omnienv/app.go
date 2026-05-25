@@ -242,10 +242,7 @@ func (app App) Launch() error {
 		return err
 	}
 
-	if err := app.waitCloudInit(); err != nil {
-		return err
-	}
-	return nil
+	return app.waitCloudInit()
 }
 
 func (app App) waitCloudInit() error {
