@@ -14,7 +14,7 @@ Items from a code review of the current codebase, ordered by rough priority.
   This means bad flags (e.g. `--invalid`) print help text but exit 0. Change to
   `return err`.
 
-- [ ] **Fix `runDevNull` misleading name/behavior** (`internal/omnienv/exec.go`).
+- [X] **Fix `runDevNull` misleading name/behavior** (`internal/omnienv/exec.go`).
   The function does not suppress stdout/stderr — it leaves `cmd.Stdout` and
   `cmd.Stderr` nil, inheriting the parent process's fds. Either redirect to
   `io.Discard` or rename to `runQuiet`.
