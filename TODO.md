@@ -30,7 +30,7 @@ Items from a code review of the current codebase, ordered by rough priority.
   changelog summarizing the v0.1 → v0.2 delta: new features, bug fixes, test
   improvements, CI setup, and notable refactors.
 
-- [ ] **Update README project status**. Currently says "Pre-alpha". At v0.2,
+- [X] **Update README project status**. Currently says "Pre-alpha". At v0.2,
   consider updating to reflect a more stable state.
 
 - [ ] **Add `go vet` to CI**. The pre-commit hooks run golangci-lint (which includes

@@ -20,8 +20,7 @@ the shell when possible.
 
 ## project status
 
-Pre-alpha. Config file format under active development and expected to make
-breaking changes.
+Usable but expect breaking changes. Config file format under active development.
 
 ## installation
 
