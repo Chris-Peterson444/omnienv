@@ -9,7 +9,7 @@ Items from a code review of the current codebase, ordered by rough priority.
   are reassignable package vars mutated by tests. This makes production reasoning hard
   and tests leaky. Move them into `App` struct fields or an interface.
 
-- [ ] **Fix `Run()` error swallowing** (`cmd/oe/main.go:14-15`). When `GetOpts`
+- [X] **Fix `Run()` error swallowing** (`cmd/oe/main.go:14-15`). When `GetOpts`
   returns a parse error, `Run()` returns `nil` instead of propagating the error.
   This means bad flags (e.g. `--invalid`) print help text but exit 0. Change to
   `return err`.

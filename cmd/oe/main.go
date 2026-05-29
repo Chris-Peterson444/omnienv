@@ -1,18 +1,20 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"runtime/debug"
 
 	"github.com/dbungert/omnienv/internal/omnienv"
+	"github.com/jessevdk/go-flags"
 )
 
 func Run() error {
 	opts, err := GetOpts(os.Args[1:])
 	if err != nil {
-		return nil
+		return err
 	}
 
 	if opts.Version {
@@ -52,7 +54,14 @@ func Run() error {
 
 func main() {
 	if err := Run(); err != nil {
-		log.Printf("ERROR: fatal error: %v", err)
+		var flagsErr *flags.Error
+		if errors.As(err, &flagsErr) {
+			if flagsErr.Type == flags.ErrHelp {
+				os.Exit(0)
+			}
+			os.Exit(1)
+		}
+		log.Printf("ERROR: %v", err)
 		os.Exit(1)
 	}
 }
