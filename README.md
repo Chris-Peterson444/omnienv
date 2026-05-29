@@ -6,8 +6,7 @@ environment.
 
 omnienv is implemented using LXD and built with golang.
 
-omnienv mounts `$HOME` read-only in the environment, along with read-write
-mounting the working directory of the project being managed at `/project`.
+omnienv mounts the working directory of the project being managed at `/project`.
 
 omnienv arranges for a `user` account to be created in the environment with
 passwordless sudo access, mapped to the host user's uid/gid. The resulting
