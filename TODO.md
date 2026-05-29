@@ -33,4 +33,4 @@ Items from a code review of the current codebase, ordered by rough priority.
 - [X] **Update README project status**. Currently says "Pre-alpha". At v0.2,
   consider updating to reflect a more stable state.
 
-- [ ] Skip bionic-vm integration test
+- [X] Skip bionic-vm integration test

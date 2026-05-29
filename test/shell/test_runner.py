@@ -45,6 +45,11 @@ def testrun(cmd, fail_label):
 failed = 0
 for system in SYSTEMS:
     for virt in ["container", "vm"]:
+        if system == "bionic" and virt == "vm":
+            # agent not present in image
+            print(f"SKIP: {system}/{virt} (known broken)")
+            continue
+
         label = f"oe-shell-test-{virt}-{system}"
         print(f"=== {system}/{virt} ===")
 
