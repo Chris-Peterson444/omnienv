@@ -32,7 +32,3 @@ Items from a code review of the current codebase, ordered by rough priority.
 
 - [X] **Update README project status**. Currently says "Pre-alpha". At v0.2,
   consider updating to reflect a more stable state.
-
-- [ ] **Add `go vet` to CI**. The pre-commit hooks run golangci-lint (which includes
-  `go vet` implicitly), but an explicit `go vet ./...` in the Makefile or workflow
-  is cheap defense-in-depth.
