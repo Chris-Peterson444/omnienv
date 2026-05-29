@@ -18,9 +18,11 @@ func Run() error {
 	}
 
 	if opts.Version {
-		ver := "unknown"
-		if bi, ok := debug.ReadBuildInfo(); ok {
-			ver = bi.Main.Version
+		ver := Version
+		if ver == "dev" {
+			if bi, ok := debug.ReadBuildInfo(); ok {
+				ver = bi.Main.Version
+			}
 		}
 		fmt.Printf("omnienv version: %v\n", ver)
 		return nil

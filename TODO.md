@@ -19,7 +19,7 @@ Items from a code review of the current codebase, ordered by rough priority.
   `cmd.Stderr` nil, inheriting the parent process's fds. Either redirect to
   `io.Discard` or rename to `runQuiet`.
 
-- [ ] **Embed version string for `--version`** (`cmd/oe/main.go`). The `--version`
+- [X] **Embed version string for `--version`** (`cmd/oe/main.go`). The `--version`
   flag uses `debug.ReadBuildInfo()` which returns `"unknown"` for locally-built
   binaries. Add a `var Version = "dev"` in a `version.go` and wire `-ldflags` into
   the Makefile so tagged releases display the correct version.

@@ -4,8 +4,10 @@ checks: build test pre-commit
 build: oe
 .PHONY: build
 
+VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+
 oe:
-	go build ./cmd/$@
+	go build -ldflags "-X main.Version=$(VERSION)" ./cmd/$@
 .PHONY: oe
 
 test:
