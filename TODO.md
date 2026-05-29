@@ -49,7 +49,7 @@ Items from a code review of the current codebase, ordered by rough priority.
   LXD client (`start`, `isVM`), others shell out to the `lxc` CLI (`lxcRun`,
   `lxcExec`, `wait`). Pick one approach and migrate consistently.
 
-- [ ] **Set up CI pipeline**. The repo has no `.github/workflows/` or equivalent CI
+- [X] **Set up CI pipeline**. The repo has no `.github/workflows/` or equivalent CI
   config. Add at minimum: `go build`, `go test`, `go vet`, and the pre-commit hooks.
 
 ## Low Priority
