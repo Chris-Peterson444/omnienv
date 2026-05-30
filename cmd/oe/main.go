@@ -29,8 +29,7 @@ func Run() error {
 	}
 
 	log.SetOutput(os.Stderr)
-	omnienv.Verbose = opts.Verbose
-	if omnienv.Verbose {
+	if opts.Verbose {
 		// G706 regards log injection, but we log to stderr
 		log.Printf("DEBUG: cmdline opts=%+v", opts) // #nosec G706
 	}
@@ -38,6 +37,9 @@ func Run() error {
 	cfg, err := omnienv.GetConfig()
 	if err != nil {
 		return fmt.Errorf("fatal error: %w", err)
+	}
+	if opts.Verbose {
+		log.Printf("DEBUG: config=%+v", cfg)
 	}
 
 	app := omnienv.NewApp(cfg, opts)

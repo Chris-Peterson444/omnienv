@@ -13,10 +13,8 @@ func TestDebugLogVerbose(t *testing.T) {
 	log.SetOutput(&buf)
 	defer log.SetOutput(nil)
 
-	Verbose = true
-	defer func() { Verbose = false }()
-
-	debugLog("hello %s", "world")
+	app := App{Opts: Opts{Verbose: true}}
+	app.debugLog("hello %s", "world")
 	assert.Contains(t, buf.String(), "DEBUG: hello world")
 }
 
@@ -25,8 +23,8 @@ func TestDebugLogNotVerbose(t *testing.T) {
 	log.SetOutput(&buf)
 	defer log.SetOutput(nil)
 
-	Verbose = false
-	debugLog("should not appear")
+	app := App{Opts: Opts{Verbose: false}}
+	app.debugLog("should not appear")
 
 	assert.Empty(t, buf)
 }

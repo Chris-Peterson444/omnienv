@@ -176,7 +176,6 @@ func loadConfig(path string) (Config, error) {
 	if cfg.Series != "" {
 		log.Printf("WARN: unsupported key series=%s", cfg.Series)
 	}
-	debugLog("loadConfig config=%+v", cfg)
 	return cfg, nil
 }
 

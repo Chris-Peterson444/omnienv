@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -30,6 +31,12 @@ func NewApp(cfg Config, opts Opts) App {
 	}
 }
 
+func (app App) debugLog(format string, args ...any) {
+	if app.Opts.Verbose {
+		log.Printf("DEBUG: "+format, args...)
+	}
+}
+
 func (app App) launchImage() string {
 	if app.Opts.System != "" {
 		return NewSystem(app.Opts.System).LaunchImage()
@@ -50,7 +57,7 @@ func (app App) name() string {
 
 func (app App) start() error {
 	args := []string{"lxc", "start", app.name()}
-	debugLog("run command=%v", args)
+	app.debugLog("run command=%v", args)
 	if err := app.run(args...); err != nil {
 		return fmt.Errorf("failed to start instance: %w", err)
 	}
@@ -59,7 +66,7 @@ func (app App) start() error {
 
 func (app App) lxcInstanceStatus() (string, error) {
 	cmd := app.command("lxc", "info", app.name())
-	debugLog("run command=%v", cmd.Args)
+	app.debugLog("run command=%v", cmd.Args)
 	out, err := cmd.Output()
 	if err != nil {
 		return "", fmt.Errorf("failed to get instance info: %w", err)
@@ -79,7 +86,7 @@ func (app App) StartIfNeeded() error {
 		return err
 	}
 
-	debugLog("startIfNeeded instanceStatus=%s", status)
+	app.debugLog("startIfNeeded instanceStatus=%s", status)
 	switch status {
 	case "STOPPED":
 		return app.start()
@@ -92,7 +99,7 @@ func (app App) StartIfNeeded() error {
 
 func (app App) isVM() (bool, error) {
 	cmd := app.command("lxc", "info", app.name())
-	debugLog("run command=%v", cmd.Args)
+	app.debugLog("run command=%v", cmd.Args)
 	out, err := cmd.Output()
 	if err != nil {
 		return false, fmt.Errorf("failed to get instance info: %w", err)
@@ -151,7 +158,7 @@ func (app App) lxcExec(args ...string) error {
 func (app App) lxcOutput(ctx context.Context, args ...string) (string, error) {
 	cmd := append([]string{"lxc", "exec", app.name(), "--"}, args...)
 	cc := app.commandContext(ctx, cmd[0], cmd[1:]...)
-	debugLog("run command=%v", cc.Args)
+	app.debugLog("run command=%v", cc.Args)
 	out, err := cc.Output()
 	if err != nil {
 		return "", err
@@ -194,7 +201,7 @@ func (app App) lp1878225Quirk() error {
 		return fmt.Errorf("LP: #1878225 workaround failure: %w", err)
 	}
 	if !affected {
-		debugLog("skipping LP: #1878225 quirk")
+		app.debugLog("skipping LP: #1878225 quirk")
 		return nil
 	}
 
@@ -229,7 +236,7 @@ func (app App) lxcLaunch() error {
 	}
 
 	cmd := app.command(args[0], args[1:]...)
-	debugLog("run command=%v", args)
+	app.debugLog("run command=%v", args)
 	cmd.Stdout = os.Stdout
 	user := CurrentUserInfo()
 	cmd.Stdin = bytes.NewReader([]byte(app.Config.lxdLaunchConfig(user)))
