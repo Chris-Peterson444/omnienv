@@ -272,3 +272,9 @@ func TestUnmarshalSystemDictFails(t *testing.T) {
 	err := yaml.Unmarshal(data, &cfg)
 	assert.ErrorContains(t, err, "cannot unmarshal")
 }
+
+func TestBackendUnsupported(t *testing.T) {
+	var cfg Config
+	assert.Nil(t, yaml.Unmarshal([]byte("backend: docker"), &cfg))
+	assert.ErrorIs(t, cfg.validate(), ErrUnsupportedBackend)
+}

@@ -13,6 +13,7 @@ import (
 const cfgName = ".omnienv.yaml"
 
 var ErrCfgNotFound = errors.New("Config not found")
+var ErrUnsupportedBackend = errors.New("unsupported backend")
 
 type System struct {
 	Name  string
@@ -84,6 +85,13 @@ type Config struct {
 	// unsupported keys that are unmarshalled for warning purposes
 	Basedir string `yaml:"basedir"`
 	Series  string
+}
+
+func (cfg Config) validate() error {
+	if cfg.Backend != "" && cfg.Backend != "lxd" {
+		return ErrUnsupportedBackend
+	}
+	return nil
 }
 
 func (cfg Config) isVM() bool {
@@ -168,6 +176,10 @@ func loadConfig(path string) (Config, error) {
 
 	if cfg.Virtualization == "" {
 		cfg.Virtualization = "container"
+	}
+
+	if err := cfg.validate(); err != nil {
+		return Config{}, err
 	}
 
 	if cfg.Basedir != "" {

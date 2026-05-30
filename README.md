@@ -72,7 +72,6 @@ These fields are supported:
 | `virtualization` | use a `container` or `vm`. | `container`, `vm`. | `container`. |
 | `label` | the prefix for the environment name, this is inferred from the basename of the `project` config. The full LXD instance name is `<label>-<system>`. | Any string. | basename of the `project` directory. |
 | `project` | which directory to mount read-write in the environment. | A filesystem directory path. | Parent directory of `.omnienv.yaml`. |
-| `backend` | which backend to use. Only `lxd` is implemented. | `lxd`. | empty (none). |
 
 The `system` field's map form can specify a custom launch image. For example:
 
