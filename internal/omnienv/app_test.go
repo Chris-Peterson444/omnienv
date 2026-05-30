@@ -1,7 +1,9 @@
 package omnienv
 
 import (
+	"bytes"
 	"context"
+	"log"
 	"os/exec"
 	"testing"
 	"time"
@@ -630,4 +632,27 @@ func TestLp1878225QuirkJammyOk(t *testing.T) {
 		command: func(_ string, _ ...string) *exec.Cmd { return exec.Command("/bin/true") },
 	}
 	assert.Nil(t, app.lp1878225Quirk())
+}
+
+func TestDebugLogVerbose(t *testing.T) {
+	var buf bytes.Buffer
+	original := log.Writer()
+	log.SetOutput(&buf)
+	defer log.SetOutput(original)
+
+	app := App{Opts: Opts{Verbose: true}}
+	app.debugLog("hello %s", "world")
+	assert.Contains(t, buf.String(), "DEBUG: hello world")
+}
+
+func TestDebugLogNotVerbose(t *testing.T) {
+	var buf bytes.Buffer
+	original := log.Writer()
+	log.SetOutput(&buf)
+	defer log.SetOutput(original)
+
+	app := App{Opts: Opts{Verbose: false}}
+	app.debugLog("should not appear")
+
+	assert.Empty(t, buf)
 }
