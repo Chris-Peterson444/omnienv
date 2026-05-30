@@ -104,10 +104,19 @@ virtualization: vm
 	},
 	image: "ubuntu-daily:zesty",
 }, {
-	summary: "project",
+	summary: "project dir",
 	data:    "project: proj",
 	config: Config{
-		Project:        "proj",
+		Label:          "proj",
+		ProjectDir:     "proj",
+		System:         NewSystem("zesty"),
+		Virtualization: "container",
+	},
+}, {
+	summary: "deprecated basedir",
+	data:    "basedir: /tmp/foo",
+	config: Config{
+		Basedir:        "/tmp/foo",
 		System:         NewSystem("zesty"),
 		Virtualization: "container",
 	},
@@ -150,8 +159,8 @@ func TestLoadCfg(t *testing.T) {
 		assert.Nil(t, err, test.summary)
 		actual, err := loadConfig(filename)
 		assert.Nil(t, err, test.summary)
-		if test.config.RootDir == "" {
-			test.config.RootDir = dirname
+		if test.config.ProjectDir == "" {
+			test.config.ProjectDir = dirname
 		}
 		if test.config.Label == "" {
 			test.config.Label = "foo"
@@ -211,7 +220,7 @@ func TestNotGetConfig(t *testing.T) {
 }
 
 func TestLXDLaunchConfigWorkdir(t *testing.T) {
-	cfg := Config{RootDir: "/tmp/b"}
+	cfg := Config{ProjectDir: "/tmp/b"}
 	expected := `
 config:
   raw.idmap: |-

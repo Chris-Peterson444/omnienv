@@ -300,14 +300,14 @@ func (app App) Shell() error {
 		return err
 	}
 
-	// determine where we are relative to RootDir, then adjust that
+	// determine where we are relative to ProjectDir, then adjust that
 	// subdirectory against /project, and cd to that
 	dest := "/project"
 	wd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("getting working directory: %w", err)
 	}
-	if after, found := strings.CutPrefix(wd, app.Config.RootDir); found {
+	if after, found := strings.CutPrefix(wd, app.Config.ProjectDir); found {
 		dest = fmt.Sprintf("%s%s", dest, after)
 	}
 

@@ -2,9 +2,8 @@
 
 ## Before v0.2
 
-- [ ] **Fix README/config key mismatch**. README documents `rootdir:` but the
-  struct tag in `config.go:77` says `yaml:"basedir"`. Fix whichever is wrong so
-  users can successfully configure the root directory.
+- [X] **Rename config key to `project`**. Was `basedir`, then `rootdir`, now
+  `project`. Added `basedir` as a deprecated (warning) key.
 
 - [ ] **Change `var cfgName` to `const`** (`config.go:13`). Never mutated.
 

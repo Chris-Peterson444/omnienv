@@ -67,14 +67,14 @@ type Config struct {
 	// Specifying distribution not yet implemented.
 	// When distribution is omitted, Ubuntu is used.
 	System System
-	// Label is set to the basename of RootDir by default, or may be
+	// Label is set to the basename of ProjectDir by default, or may be
 	// overwritten with the supplied value.  Used as part of the name of
 	// the instance, along with System.
 	Label string
-	// RootDir is the writable base directory that the container has access
-	// to.  This field is optional, and if unsupplied uses the parent
-	// directory of the omnienv.yaml config.
-	RootDir string `yaml:"basedir"`
+	// ProjectDir is the writable base directory that the container has
+	// access to.  This field is optional, and if unsupplied uses the
+	// parent directory of the omnienv.yaml config.
+	ProjectDir string `yaml:"project"`
 	// Backend indicates upon what we are running the instance.
 	// Only "lxd" is implemented.
 	Backend string
@@ -82,7 +82,7 @@ type Config struct {
 	Virtualization string
 
 	// unsupported keys that are unmarshalled for warning purposes
-	Project string
+	Basedir string `yaml:"basedir"`
 	Series  string
 }
 
@@ -92,7 +92,7 @@ func (cfg Config) isVM() bool {
 
 func (cfg Config) lxdLaunchConfig(user UserInfo) string {
 	tmap := map[string]string{
-		"WORKDIR":  cfg.RootDir,
+		"WORKDIR":  cfg.ProjectDir,
 		"HOST_UID": strconv.Itoa(user.UID),
 		"HOST_GID": strconv.Itoa(user.GID),
 	}
@@ -154,12 +154,12 @@ func loadConfig(path string) (Config, error) {
 		return Config{}, err
 	}
 
-	if cfg.RootDir == "" {
-		cfg.RootDir = filepath.Dir(path)
+	if cfg.ProjectDir == "" {
+		cfg.ProjectDir = filepath.Dir(path)
 	}
 
 	if cfg.Label == "" {
-		cfg.Label = filepath.Base(cfg.RootDir)
+		cfg.Label = filepath.Base(cfg.ProjectDir)
 	}
 
 	if cfg.System.Name == "" {
@@ -170,8 +170,8 @@ func loadConfig(path string) (Config, error) {
 		cfg.Virtualization = "container"
 	}
 
-	if cfg.Project != "" {
-		log.Printf("WARN: unsupported key project=%s", cfg.Project)
+	if cfg.Basedir != "" {
+		log.Printf("WARN: unsupported key basedir=%s", cfg.Basedir)
 	}
 	if cfg.Series != "" {
 		log.Printf("WARN: unsupported key series=%s", cfg.Series)

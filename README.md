@@ -77,13 +77,13 @@ These fields are supported:
   ```
 * `virtualization` (optional): use a `container` (default) or `vm`.
 * `label` (optional): the prefix for the environment name, this is inferred
-  from the basename of the `rootdir` config. The full LXD instance name is
+  from the basename of the `project` config. The full LXD instance name is
   `<label>-<system>`.
-* `rootdir` (optional): which directory to mount read-write in the environment.
+* `project` (optional): which directory to mount read-write in the environment.
   If unspecified, this is set to the parent directory of `.omnienv.yaml`.
 * `backend` (optional): which backend to use. Only `lxd` is implemented.
 
-The deprecated keys `project` and `series` are accepted but produce a warning.
+The deprecated keys `basedir` and `series` are accepted but produce a warning.
 
 ## expected project direction
 
