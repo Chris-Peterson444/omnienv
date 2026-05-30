@@ -16,8 +16,8 @@
   panics on `args[0]` if called with no arguments. All existing callers are
   safe, but it's a footgun.
 
-- [ ] **Review `test_runner.py` system list**. `resolute` references Ubuntu
-  25.04; verify it's intentional and works.
+- [X] **Review `test_runner.py` system list**. `resolute` is Ubuntu 26.04
+  (intentional, this container runs it).
 
 - [ ] **Use `t.Helper()` in `patchEnv`** (`config_test.go`). Minor test hygiene.
 
