@@ -21,3 +21,5 @@
   25.04; verify it's intentional and works.
 
 - [ ] **Use `t.Helper()` in `patchEnv`** (`config_test.go`). Minor test hygiene.
+
+- [ ] test coverage for more of ./cmd ?
