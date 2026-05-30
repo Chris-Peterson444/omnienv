@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.0] - 2026-05-28
+## [0.2.0] - 2026-05-30
 
 ### Added
 
@@ -9,12 +9,12 @@
 
 ### Changed
 
+- Config key renamed from `basedir` to `project`; `basedir` is now deprecated
+  and produces a warning
 - Unit tests overhauled and simpler to understand
 - Logging moved away from `slog` to a nicer user format (retaining timestamps)
 - `--help` and invalid flags now use consistent single-error output; bad flags
   exit non-zero
-- Renamed `project` and `series` config keys — still accepted but produce a
-  deprecation warning
 
 ### Fixed
 
