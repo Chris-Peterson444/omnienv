@@ -5,8 +5,8 @@ import (
 	"os"
 )
 
-func run(args ...string) error {
-	cmd := command(args[0], args[1:]...)
+func (app App) run(args ...string) error {
+	cmd := app.command(args[0], args[1:]...)
 	debugLog("run command=%v", args)
 	cmd.Stdout = os.Stdout
 	cmd.Stdin = os.Stdin
@@ -14,8 +14,8 @@ func run(args ...string) error {
 	return cmd.Run()
 }
 
-func runDevNull(args ...string) error {
-	cmd := command(args[0], args[1:]...)
+func (app App) runDevNull(args ...string) error {
+	cmd := app.command(args[0], args[1:]...)
 	debugLog("run command=%v", args)
 	cmd.Stdout = io.Discard
 	cmd.Stderr = io.Discard

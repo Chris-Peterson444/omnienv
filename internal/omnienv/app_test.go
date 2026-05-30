@@ -68,11 +68,11 @@ var lxcInstanceStatusTests = []struct {
 
 func TestLxcInstanceStatus(t *testing.T) {
 	for _, test := range lxcInstanceStatusTests {
-		restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-			return test.cmd
-		})
-		status, err := App{Config: Config{Label: "l", System: NewSystem("s")}}.lxcInstanceStatus()
-		restoreCmd()
+		app := App{
+			Config:  Config{Label: "l", System: NewSystem("s")},
+			command: func(_ string, _ ...string) *exec.Cmd { return test.cmd },
+		}
+		status, err := app.lxcInstanceStatus()
 		if test.errMsg != "" {
 			assert.ErrorContains(t, err, test.errMsg, test.summary)
 		} else {
@@ -97,11 +97,11 @@ var startIfNeededTests = []struct {
 
 func TestStartIfNeeded(t *testing.T) {
 	for _, test := range startIfNeededTests {
-		restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-			return test.cmd
-		})
-		err := App{Config: Config{Label: "l", System: NewSystem("s")}}.StartIfNeeded()
-		restoreCmd()
+		app := App{
+			Config:  Config{Label: "l", System: NewSystem("s")},
+			command: func(_ string, _ ...string) *exec.Cmd { return test.cmd },
+		}
+		err := app.StartIfNeeded()
 		if test.errMsg != "" {
 			assert.ErrorContains(t, err, test.errMsg, test.summary)
 		} else {
@@ -112,24 +112,24 @@ func TestStartIfNeeded(t *testing.T) {
 
 func TestStartIfNeededStopped(t *testing.T) {
 	callCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		callCount++
-		if callCount == 1 {
-			return exec.Command("/bin/echo", "Status: STOPPED")
-		}
-		return exec.Command("/bin/true")
-	})
-	defer restoreCmd()
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			callCount++
+			if callCount == 1 {
+				return exec.Command("/bin/echo", "Status: STOPPED")
+			}
+			return exec.Command("/bin/true")
+		},
+	}
 	assert.Nil(t, app.StartIfNeeded())
 }
 
 func TestStartFails(t *testing.T) {
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/false")
-	})
-	defer restoreCmd()
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config:  Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd { return exec.Command("/bin/false") },
+	}
 	err := app.start()
 	assert.ErrorContains(t, err, "failed to start instance")
 }
@@ -159,11 +159,11 @@ var isVMTests = []struct {
 
 func TestIsVM(t *testing.T) {
 	for _, test := range isVMTests {
-		restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-			return test.cmd
-		})
-		vm, err := App{Config: Config{Label: "l", System: NewSystem("s")}}.isVM()
-		restoreCmd()
+		app := App{
+			Config:  Config{Label: "l", System: NewSystem("s")},
+			command: func(_ string, _ ...string) *exec.Cmd { return test.cmd },
+		}
+		vm, err := app.isVM()
 		if test.errMsg != "" {
 			assert.ErrorContains(t, err, test.errMsg, test.summary)
 		} else {
@@ -174,91 +174,93 @@ func TestIsVM(t *testing.T) {
 }
 
 func TestWaitNotVM(t *testing.T) {
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/echo", "Type: container")
-	})
-	defer restoreCmd()
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config:  Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd { return exec.Command("/bin/echo", "Type: container") },
+	}
 	assert.Nil(t, app.Wait())
 }
 
 func TestWaitVMExecOk(t *testing.T) {
 	callCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		callCount++
-		if callCount == 1 {
-			return exec.Command("/bin/echo", "Type: virtual-machine")
-		}
-		return exec.Command("/bin/true")
-	})
-	defer restoreCmd()
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			callCount++
+			if callCount == 1 {
+				return exec.Command("/bin/echo", "Type: virtual-machine")
+			}
+			return exec.Command("/bin/true")
+		},
+	}
 	assert.Nil(t, app.Wait())
 }
 
 func TestWaitVMExecFailsNonExitError(t *testing.T) {
 	callCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		callCount++
-		if callCount == 1 {
-			return exec.Command("/bin/echo", "Type: virtual-machine")
-		}
-		return exec.Command("/nonexistent-binary")
-	})
-	defer restoreCmd()
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			callCount++
+			if callCount == 1 {
+				return exec.Command("/bin/echo", "Type: virtual-machine")
+			}
+			return exec.Command("/nonexistent-binary")
+		},
+	}
 	err := app.Wait()
 	assert.Error(t, err)
 }
 
 func TestWaitVMStrangeExitCode(t *testing.T) {
 	callCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		callCount++
-		if callCount == 1 {
-			return exec.Command("/bin/echo", "Type: virtual-machine")
-		}
-		return exec.Command("/bin/false")
-	})
-	defer restoreCmd()
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			callCount++
+			if callCount == 1 {
+				return exec.Command("/bin/echo", "Type: virtual-machine")
+			}
+			return exec.Command("/bin/false")
+		},
+	}
 	err := app.Wait()
 	assert.ErrorContains(t, err, "strange lxc exec exit code 1")
 }
 
 func TestWaitVMTimeout(t *testing.T) {
 	callCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		callCount++
-		if callCount == 1 {
-			return exec.Command("/bin/echo", "Type: virtual-machine")
-		}
-		return exec.Command("/bin/sh", "-c", "exit 255")
-	})
-	defer restoreCmd()
-	restoreSleep := Patch(&timeSleep, func(_ time.Duration) {})
-	defer restoreSleep()
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			callCount++
+			if callCount == 1 {
+				return exec.Command("/bin/echo", "Type: virtual-machine")
+			}
+			return exec.Command("/bin/sh", "-c", "exit 255")
+		},
+		timeSleep: func(_ time.Duration) {},
+	}
 	err := app.Wait()
 	assert.ErrorContains(t, err, "timed out waiting")
 }
 
 func TestWaitVMEventualSuccess(t *testing.T) {
 	callCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		callCount++
-		if callCount == 1 {
-			return exec.Command("/bin/echo", "Type: virtual-machine")
-		}
-		if callCount < 5 {
-			return exec.Command("/bin/sh", "-c", "exit 255")
-		}
-		return exec.Command("/bin/true")
-	})
-	defer restoreCmd()
-	restoreSleep := Patch(&timeSleep, func(_ time.Duration) {})
-	defer restoreSleep()
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			callCount++
+			if callCount == 1 {
+				return exec.Command("/bin/echo", "Type: virtual-machine")
+			}
+			if callCount < 5 {
+				return exec.Command("/bin/sh", "-c", "exit 255")
+			}
+			return exec.Command("/bin/true")
+		},
+		timeSleep: func(_ time.Duration) {},
+	}
 	assert.Nil(t, app.Wait())
 }
 
@@ -286,11 +288,13 @@ var isUbuntuJammyTests = []struct {
 
 func TestIsUbuntuJammy(t *testing.T) {
 	for _, test := range isUbuntuJammyTests {
-		restoreCmdCtx := Patch(&commandContext, func(_ context.Context, _ string, _ ...string) *exec.Cmd {
-			return test.cmd
-		})
-		jammy, err := App{Config: Config{Label: "l", System: NewSystem("s")}}.isUbuntuJammy()
-		restoreCmdCtx()
+		app := App{
+			Config: Config{Label: "l", System: NewSystem("s")},
+			commandContext: func(_ context.Context, _ string, _ ...string) *exec.Cmd {
+				return test.cmd
+			},
+		}
+		jammy, err := app.isUbuntuJammy()
 		assert.Nil(t, err, test.summary)
 		assert.Equal(t, test.want, jammy, test.summary)
 	}
@@ -298,258 +302,245 @@ func TestIsUbuntuJammy(t *testing.T) {
 
 func TestShellContainerOk(t *testing.T) {
 	cmdCallCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		cmdCallCount++
-		switch cmdCallCount {
-		case 1:
-			return exec.Command("/bin/echo", "Status: RUNNING") // StartIfNeeded
-		case 2:
-			return exec.Command("/bin/echo", "Type: container") // Wait → isVM
-		case 3:
-			return exec.Command("/bin/true") // lxcExec
-		default:
-			return exec.Command("/bin/true")
-		}
-	})
-	defer restoreCmd()
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			cmdCallCount++
+			switch cmdCallCount {
+			case 1:
+				return exec.Command("/bin/echo", "Status: RUNNING") // StartIfNeeded
+			case 2:
+				return exec.Command("/bin/echo", "Type: container") // Wait → isVM
+			case 3:
+				return exec.Command("/bin/true") // lxcExec
+			default:
+				return exec.Command("/bin/true")
+			}
+		},
+	}
 	assert.Nil(t, app.Shell())
 }
 
 func TestShellStartIfNeededFails(t *testing.T) {
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/false")
-	})
-	defer restoreCmd()
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config:  Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd { return exec.Command("/bin/false") },
+	}
 	err := app.Shell()
 	assert.ErrorContains(t, err, "failed to start instance")
 }
 
 func TestShellWaitFails(t *testing.T) {
 	cmdCallCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		cmdCallCount++
-		if cmdCallCount == 1 {
-			return exec.Command("/bin/echo", "Status: RUNNING") // StartIfNeeded
-		}
-		return exec.Command("/bin/false") // Wait → isVM
-	})
-	defer restoreCmd()
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			cmdCallCount++
+			if cmdCallCount == 1 {
+				return exec.Command("/bin/echo", "Status: RUNNING") // StartIfNeeded
+			}
+			return exec.Command("/bin/false") // Wait → isVM
+		},
+	}
 	err := app.Shell()
 	assert.ErrorContains(t, err, "failed to wait for instance")
 }
 
 func TestShellLxcExecFails(t *testing.T) {
 	cmdCallCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		cmdCallCount++
-		switch cmdCallCount {
-		case 1:
-			return exec.Command("/bin/echo", "Status: RUNNING") // StartIfNeeded
-		case 2:
-			return exec.Command("/bin/echo", "Type: container") // Wait → isVM
-		case 3:
-			return exec.Command("/bin/false") // lxcExec
-		default:
-			return exec.Command("/bin/true")
-		}
-	})
-	defer restoreCmd()
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			cmdCallCount++
+			switch cmdCallCount {
+			case 1:
+				return exec.Command("/bin/echo", "Status: RUNNING") // StartIfNeeded
+			case 2:
+				return exec.Command("/bin/echo", "Type: container") // Wait → isVM
+			case 3:
+				return exec.Command("/bin/false") // lxcExec
+			default:
+				return exec.Command("/bin/true")
+			}
+		},
+	}
 	err := app.Shell()
 	assert.ErrorContains(t, err, "failed to lxc exec")
 }
 
 func TestShellWithParams(t *testing.T) {
 	cmdCallCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		cmdCallCount++
-		switch cmdCallCount {
-		case 1:
-			return exec.Command("/bin/echo", "Status: RUNNING") // StartIfNeeded
-		case 2:
-			return exec.Command("/bin/echo", "Type: container") // Wait → isVM
-		case 3:
-			return exec.Command("/bin/true") // lxcExec
-		default:
-			return exec.Command("/bin/true")
-		}
-	})
-	defer restoreCmd()
 	app := App{
 		Config: Config{Label: "l", System: NewSystem("s")},
 		Opts:   Opts{Params: []string{"echo", "hi"}},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			cmdCallCount++
+			switch cmdCallCount {
+			case 1:
+				return exec.Command("/bin/echo", "Status: RUNNING") // StartIfNeeded
+			case 2:
+				return exec.Command("/bin/echo", "Type: container") // Wait → isVM
+			case 3:
+				return exec.Command("/bin/true") // lxcExec
+			default:
+				return exec.Command("/bin/true")
+			}
+		},
 	}
 	assert.Nil(t, app.Shell())
 }
 
 func TestLaunchContainerOk(t *testing.T) {
 	cmdCallCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		cmdCallCount++
-		switch cmdCallCount {
-		case 1:
-			return exec.Command("/bin/true") // lxc launch
-		case 2:
-			return exec.Command("/bin/echo", "Type: container") // lxc info
-		case 3:
-			return exec.Command("/bin/true") // lxc exec use_pty
-		case 4:
-			return exec.Command("/bin/true") // lxc exec cloud-init
-		default:
-			return exec.Command("/bin/true")
-		}
-	})
-	defer restoreCmd()
-
-	restoreCmdCtx := Patch(&commandContext, func(_ context.Context, _ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/echo", "Debian")
-	})
-	defer restoreCmdCtx()
-
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			cmdCallCount++
+			switch cmdCallCount {
+			case 1:
+				return exec.Command("/bin/true") // lxc launch
+			case 2:
+				return exec.Command("/bin/echo", "Type: container") // lxc info
+			case 3:
+				return exec.Command("/bin/true") // lxc exec use_pty
+			case 4:
+				return exec.Command("/bin/true") // lxc exec cloud-init
+			default:
+				return exec.Command("/bin/true")
+			}
+		},
+		commandContext: func(_ context.Context, _ string, _ ...string) *exec.Cmd {
+			return exec.Command("/bin/echo", "Debian")
+		},
+	}
 	assert.Nil(t, app.Launch())
 }
 
 func TestLaunchLxcLaunchFails(t *testing.T) {
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/false")
-	})
-	defer restoreCmd()
-
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config:  Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd { return exec.Command("/bin/false") },
+	}
 	err := app.Launch()
 	assert.ErrorContains(t, err, "failed to create instance")
 }
 
 func TestLxcLaunchFails(t *testing.T) {
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/false")
-	})
-	defer restoreCmd()
-
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config:  Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd { return exec.Command("/bin/false") },
+	}
 	err := app.lxcLaunch()
 	assert.ErrorContains(t, err, "failed to create instance")
 }
 
 func TestLxcLaunchVM(t *testing.T) {
 	var args []string
-	restoreCmd := Patch(&command, func(name string, arg ...string) *exec.Cmd {
-		args = append([]string{name}, arg...)
-		return exec.Command("/bin/true")
-	})
-	defer restoreCmd()
-
-	app := App{Config: Config{Label: "l", System: NewSystem("s"), Virtualization: "vm"}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s"), Virtualization: "vm"},
+		command: func(name string, arg ...string) *exec.Cmd {
+			args = append([]string{name}, arg...)
+			return exec.Command("/bin/true")
+		},
+	}
 	assert.Nil(t, app.lxcLaunch())
 	assert.Contains(t, args, "--vm")
 }
 
 func TestLaunchWaitFails(t *testing.T) {
 	cmdCallCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		cmdCallCount++
-		if cmdCallCount == 1 {
-			return exec.Command("/bin/true") // lxc launch
-		}
-		return exec.Command("/bin/false") // lxc info
-	})
-	defer restoreCmd()
-
-	restoreCmdCtx := Patch(&commandContext, func(_ context.Context, _ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/echo", "Debian")
-	})
-	defer restoreCmdCtx()
-
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			cmdCallCount++
+			if cmdCallCount == 1 {
+				return exec.Command("/bin/true") // lxc launch
+			}
+			return exec.Command("/bin/false") // lxc info
+		},
+		commandContext: func(_ context.Context, _ string, _ ...string) *exec.Cmd {
+			return exec.Command("/bin/echo", "Debian")
+		},
+	}
 	err := app.Launch()
 	assert.ErrorContains(t, err, "failed to wait for instance")
 }
 
 func TestLaunchUsePtyFails(t *testing.T) {
 	cmdCallCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		cmdCallCount++
-		switch cmdCallCount {
-		case 1:
-			return exec.Command("/bin/true") // lxc launch
-		case 2:
-			return exec.Command("/bin/echo", "Type: container") // lxc info
-		case 3:
-			return exec.Command("/bin/false") // lxc exec use_pty
-		default:
-			return exec.Command("/bin/true")
-		}
-	})
-	defer restoreCmd()
-
-	restoreCmdCtx := Patch(&commandContext, func(_ context.Context, _ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/echo", "Debian")
-	})
-	defer restoreCmdCtx()
-
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			cmdCallCount++
+			switch cmdCallCount {
+			case 1:
+				return exec.Command("/bin/true") // lxc launch
+			case 2:
+				return exec.Command("/bin/echo", "Type: container") // lxc info
+			case 3:
+				return exec.Command("/bin/false") // lxc exec use_pty
+			default:
+				return exec.Command("/bin/true")
+			}
+		},
+		commandContext: func(_ context.Context, _ string, _ ...string) *exec.Cmd {
+			return exec.Command("/bin/echo", "Debian")
+		},
+	}
 	err := app.Launch()
 	assert.ErrorContains(t, err, "use_pty setup failure")
 }
 
 func TestLaunchCloudInitFails(t *testing.T) {
 	cmdCallCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		cmdCallCount++
-		switch cmdCallCount {
-		case 1:
-			return exec.Command("/bin/true") // lxc launch
-		case 2:
-			return exec.Command("/bin/echo", "Type: container") // lxc info
-		case 3:
-			return exec.Command("/bin/true") // lxc exec use_pty
-		case 4:
-			return exec.Command("/bin/false") // lxc exec cloud-init
-		default:
-			return exec.Command("/bin/true")
-		}
-	})
-	defer restoreCmd()
-
-	restoreCmdCtx := Patch(&commandContext, func(_ context.Context, _ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/echo", "Debian")
-	})
-	defer restoreCmdCtx()
-
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			cmdCallCount++
+			switch cmdCallCount {
+			case 1:
+				return exec.Command("/bin/true") // lxc launch
+			case 2:
+				return exec.Command("/bin/echo", "Type: container") // lxc info
+			case 3:
+				return exec.Command("/bin/true") // lxc exec use_pty
+			case 4:
+				return exec.Command("/bin/false") // lxc exec cloud-init
+			default:
+				return exec.Command("/bin/true")
+			}
+		},
+		commandContext: func(_ context.Context, _ string, _ ...string) *exec.Cmd {
+			return exec.Command("/bin/echo", "Debian")
+		},
+	}
 	err := app.Launch()
 	assert.ErrorContains(t, err, "cloud-init failure")
 }
 
 func TestLaunchQuirkFails(t *testing.T) {
-	restoreCmdCtx := Patch(&commandContext, func(_ context.Context, _ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/printf", "Distributor ID: Ubuntu\nRelease: 22.04")
-	})
-	defer restoreCmdCtx()
-
 	cmdCallCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		cmdCallCount++
-		switch cmdCallCount {
-		case 1:
-			return exec.Command("/bin/true") // lxc launch
-		case 2:
-			return exec.Command("/bin/echo", "Type: container") // lxc info
-		case 3:
-			return exec.Command("/bin/true") // lxc exec use_pty
-		case 4:
-			return exec.Command("/bin/false") // lxc exec bus wait (quirk)
-		default:
-			return exec.Command("/bin/true")
-		}
-	})
-	defer restoreCmd()
-
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			cmdCallCount++
+			switch cmdCallCount {
+			case 1:
+				return exec.Command("/bin/true") // lxc launch
+			case 2:
+				return exec.Command("/bin/echo", "Type: container") // lxc info
+			case 3:
+				return exec.Command("/bin/true") // lxc exec use_pty
+			case 4:
+				return exec.Command("/bin/false") // lxc exec bus wait (quirk)
+			default:
+				return exec.Command("/bin/true")
+			}
+		},
+		commandContext: func(_ context.Context, _ string, _ ...string) *exec.Cmd {
+			return exec.Command("/bin/printf", "Distributor ID: Ubuntu\nRelease: 22.04")
+		},
+	}
 	err := app.Launch()
 	assert.ErrorContains(t, err, "LP: #1878225 workaround failure")
 }
@@ -579,73 +570,64 @@ func TestSudoLogin(t *testing.T) {
 }
 
 func TestLp1878225QuirkNotJammy(t *testing.T) {
-	restoreCmdCtx := Patch(&commandContext, func(_ context.Context, _ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/echo", "Debian")
-	})
-	defer restoreCmdCtx()
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		commandContext: func(_ context.Context, _ string, _ ...string) *exec.Cmd {
+			return exec.Command("/bin/echo", "Debian")
+		},
+	}
 	assert.Nil(t, app.lp1878225Quirk())
 }
 
 func TestLp1878225QuirkIsUbuntuJammyFails(t *testing.T) {
-	restoreCmdCtx := Patch(&commandContext, func(_ context.Context, _ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/false")
-	})
-	defer restoreCmdCtx()
-
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		commandContext: func(_ context.Context, _ string, _ ...string) *exec.Cmd {
+			return exec.Command("/bin/false")
+		},
+	}
 	err := app.lp1878225Quirk()
 	assert.ErrorContains(t, err, "LP: #1878225 workaround failure")
 }
 
 func TestLp1878225QuirkBusWaitFails(t *testing.T) {
-	restoreCmdCtx := Patch(&commandContext, func(_ context.Context, _ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/printf", "Distributor ID: Ubuntu\nRelease: 22.04")
-	})
-	defer restoreCmdCtx()
-
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/false")
-	})
-	defer restoreCmd()
-
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		commandContext: func(_ context.Context, _ string, _ ...string) *exec.Cmd {
+			return exec.Command("/bin/printf", "Distributor ID: Ubuntu\nRelease: 22.04")
+		},
+		command: func(_ string, _ ...string) *exec.Cmd { return exec.Command("/bin/false") },
+	}
 	err := app.lp1878225Quirk()
 	assert.ErrorContains(t, err, "bus wait failure")
 }
 
 func TestLp1878225QuirkSeededStopFails(t *testing.T) {
-	restoreCmdCtx := Patch(&commandContext, func(_ context.Context, _ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/printf", "Distributor ID: Ubuntu\nRelease: 22.04")
-	})
-	defer restoreCmdCtx()
-
 	cmdCallCount := 0
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		cmdCallCount++
-		if cmdCallCount == 1 {
-			return exec.Command("/bin/true")
-		}
-		return exec.Command("/bin/false")
-	})
-	defer restoreCmd()
-
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		commandContext: func(_ context.Context, _ string, _ ...string) *exec.Cmd {
+			return exec.Command("/bin/printf", "Distributor ID: Ubuntu\nRelease: 22.04")
+		},
+		command: func(_ string, _ ...string) *exec.Cmd {
+			cmdCallCount++
+			if cmdCallCount == 1 {
+				return exec.Command("/bin/true")
+			}
+			return exec.Command("/bin/false")
+		},
+	}
 	err := app.lp1878225Quirk()
 	assert.ErrorContains(t, err, "seeded stop failure")
 }
 
 func TestLp1878225QuirkJammyOk(t *testing.T) {
-	restoreCmdCtx := Patch(&commandContext, func(_ context.Context, _ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/printf", "Distributor ID: Ubuntu\nRelease: 22.04")
-	})
-	defer restoreCmdCtx()
-
-	restoreCmd := Patch(&command, func(_ string, _ ...string) *exec.Cmd {
-		return exec.Command("/bin/true")
-	})
-	defer restoreCmd()
-
-	app := App{Config: Config{Label: "l", System: NewSystem("s")}}
+	app := App{
+		Config: Config{Label: "l", System: NewSystem("s")},
+		commandContext: func(_ context.Context, _ string, _ ...string) *exec.Cmd {
+			return exec.Command("/bin/printf", "Distributor ID: Ubuntu\nRelease: 22.04")
+		},
+		command: func(_ string, _ ...string) *exec.Cmd { return exec.Command("/bin/true") },
+	}
 	assert.Nil(t, app.lp1878225Quirk())
 }

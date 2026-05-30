@@ -13,8 +13,21 @@ import (
 )
 
 type App struct {
-	Config Config
-	Opts   Opts
+	Config         Config
+	Opts           Opts
+	command        func(string, ...string) *exec.Cmd
+	commandContext func(context.Context, string, ...string) *exec.Cmd
+	timeSleep      func(time.Duration)
+}
+
+func NewApp(cfg Config, opts Opts) App {
+	return App{
+		Config:         cfg,
+		Opts:           opts,
+		command:        exec.Command,
+		commandContext: exec.CommandContext,
+		timeSleep:      time.Sleep,
+	}
 }
 
 func (app App) launchImage() string {
@@ -38,14 +51,14 @@ func (app App) name() string {
 func (app App) start() error {
 	args := []string{"lxc", "start", app.name()}
 	debugLog("run command=%v", args)
-	if err := run(args...); err != nil {
+	if err := app.run(args...); err != nil {
 		return fmt.Errorf("failed to start instance: %w", err)
 	}
 	return nil
 }
 
 func (app App) lxcInstanceStatus() (string, error) {
-	cmd := command("lxc", "info", app.name())
+	cmd := app.command("lxc", "info", app.name())
 	debugLog("run command=%v", cmd.Args)
 	out, err := cmd.Output()
 	if err != nil {
@@ -78,7 +91,7 @@ func (app App) StartIfNeeded() error {
 }
 
 func (app App) isVM() (bool, error) {
-	cmd := command("lxc", "info", app.name())
+	cmd := app.command("lxc", "info", app.name())
 	debugLog("run command=%v", cmd.Args)
 	out, err := cmd.Output()
 	if err != nil {
@@ -104,7 +117,7 @@ func (app App) Wait() error {
 
 	fmt.Print("Waiting")
 	for i := 0; ; i++ {
-		err := runDevNull(
+		err := app.runDevNull(
 			"lxc", "exec", app.name(), "--", "/bin/true",
 		)
 		if err == nil {
@@ -125,19 +138,19 @@ func (app App) Wait() error {
 			return fmt.Errorf("failed to wait for instance: timed out waiting for %s to become reachable", app.name())
 		}
 
-		timeSleep(time.Second)
+		app.timeSleep(time.Second)
 		fmt.Print(".")
 	}
 }
 
 func (app App) lxcExec(args ...string) error {
 	cmd := append([]string{"lxc", "exec", app.name(), "--"}, args...)
-	return run(cmd...)
+	return app.run(cmd...)
 }
 
 func (app App) lxcOutput(ctx context.Context, args ...string) (string, error) {
 	cmd := append([]string{"lxc", "exec", app.name(), "--"}, args...)
-	cc := commandContext(ctx, cmd[0], cmd[1:]...)
+	cc := app.commandContext(ctx, cmd[0], cmd[1:]...)
 	debugLog("run command=%v", cc.Args)
 	out, err := cc.Output()
 	if err != nil {
@@ -215,7 +228,7 @@ func (app App) lxcLaunch() error {
 		args = append(args, "--vm")
 	}
 
-	cmd := command(args[0], args[1:]...)
+	cmd := app.command(args[0], args[1:]...)
 	debugLog("run command=%v", args)
 	cmd.Stdout = os.Stdout
 	user := CurrentUserInfo()

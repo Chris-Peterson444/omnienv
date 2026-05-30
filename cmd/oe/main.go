@@ -39,7 +39,7 @@ func Run() error {
 		return fmt.Errorf("fatal error: %w", err)
 	}
 
-	app := omnienv.App{Config: cfg, Opts: opts}
+	app := omnienv.NewApp(cfg, opts)
 
 	if opts.Launch {
 		if err := app.Launch(); err != nil {

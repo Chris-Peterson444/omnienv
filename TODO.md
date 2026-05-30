@@ -4,7 +4,7 @@ Items from a code review of the current codebase, ordered by rough priority.
 
 ## High Priority
 
-- [ ] **Replace global variable indirection with dependency injection**
+- [X] **Replace global variable indirection with dependency injection**
   (`globals.go`). `command`, `commandContext`, `timeSleep`
   are reassignable package vars mutated by tests. This makes production reasoning hard
   and tests leaky. Move them into `App` struct fields or an interface.
