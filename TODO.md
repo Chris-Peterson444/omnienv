@@ -12,7 +12,7 @@
 - [X] **Test `NewApp()`**. Trivial constructor (0% coverage) — only matters if
   it grows logic.
 
-- [ ] **Add empty-args guard to `run()`/`runDevNull()`** (`exec.go`). Currently
+- [X] **Add empty-args guard to `run()`/`runDevNull()`** (`exec.go`). Currently
   panics on `args[0]` if called with no arguments. All existing callers are
   safe, but it's a footgun.
 
