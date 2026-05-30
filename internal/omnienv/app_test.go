@@ -634,6 +634,17 @@ func TestLp1878225QuirkJammyOk(t *testing.T) {
 	assert.Nil(t, app.lp1878225Quirk())
 }
 
+func TestNewApp(t *testing.T) {
+	cfg := Config{Label: "l", System: NewSystem("s")}
+	opts := Opts{Verbose: true}
+	app := NewApp(cfg, opts)
+	assert.Equal(t, cfg, app.Config)
+	assert.Equal(t, opts, app.Opts)
+	assert.NotNil(t, app.command)
+	assert.NotNil(t, app.commandContext)
+	assert.NotNil(t, app.timeSleep)
+}
+
 func TestDebugLogVerbose(t *testing.T) {
 	var buf bytes.Buffer
 	original := log.Writer()

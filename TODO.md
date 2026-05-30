@@ -9,7 +9,7 @@
 
 ## v0.3+
 
-- [ ] **Test `NewApp()`**. Trivial constructor (0% coverage) — only matters if
+- [X] **Test `NewApp()`**. Trivial constructor (0% coverage) — only matters if
   it grows logic.
 
 - [ ] **Add empty-args guard to `run()`/`runDevNull()`** (`exec.go`). Currently
