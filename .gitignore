@@ -1,5 +1,4 @@
 .coverprofile
 /oe
-/oe-launch
-.pytest_cache/
 __pycache__/
+/.opencode
