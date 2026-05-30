@@ -28,7 +28,8 @@ func Run() error {
 		return nil
 	}
 
-	setupLogging(opts.Verbose)
+	log.SetOutput(os.Stderr)
+	omnienv.Verbose = opts.Verbose
 	if omnienv.Verbose {
 		// G706 regards log injection, but we log to stderr
 		log.Printf("DEBUG: cmdline opts=%+v", opts) // #nosec G706
