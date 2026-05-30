@@ -1,10 +1,10 @@
+VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+
 checks: build test pre-commit
 .PHONY: checks
 
 build: oe
 .PHONY: build
-
-VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 
 oe:
 	go build -ldflags "-X main.Version=$(VERSION)" ./cmd/$@
