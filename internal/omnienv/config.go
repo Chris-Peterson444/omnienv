@@ -10,7 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var cfgName = ".omnienv.yaml"
+const cfgName = ".omnienv.yaml"
 
 var ErrCfgNotFound = errors.New("Config not found")
 

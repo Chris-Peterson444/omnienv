@@ -5,7 +5,7 @@
 - [X] **Rename config key to `project`**. Was `basedir`, then `rootdir`, now
   `project`. Added `basedir` as a deprecated (warning) key.
 
-- [ ] **Change `var cfgName` to `const`** (`config.go:13`). Never mutated.
+- [X] **Change `var cfgName` to `const`** (`config.go:13`). Never mutated.
 
 ## v0.3+
 
