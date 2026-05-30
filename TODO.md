@@ -19,6 +19,6 @@
 - [X] **Review `test_runner.py` system list**. `resolute` is Ubuntu 26.04
   (intentional, this container runs it).
 
-- [ ] **Use `t.Helper()` in `patchEnv`** (`config_test.go`). Minor test hygiene.
+- [X] **Use `t.Helper()` in `patchEnv`** (`config_test.go`). Minor test hygiene.
 
-- [ ] test coverage for more of ./cmd ?
+- [X] test coverage for more of ./cmd ?

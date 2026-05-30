@@ -45,7 +45,8 @@ func TestFindParentCfg(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func patchEnv(key string, mock string) func() {
+func patchEnv(t *testing.T, key string, mock string) func() {
+	t.Helper()
 	original, ok := os.LookupEnv(key)
 	_ = os.Setenv(key, mock)
 	return func() {
@@ -151,7 +152,7 @@ func TestLoadCfg(t *testing.T) {
 	assert.Nil(t, os.Mkdir(dirname, 0750))
 	filename := dirname + "/" + cfgName
 
-	restoreEnv := patchEnv("DEFAULT_SERIES", "zesty")
+	restoreEnv := patchEnv(t, "DEFAULT_SERIES", "zesty")
 	defer restoreEnv()
 
 	for _, test := range loadCfgTests {
