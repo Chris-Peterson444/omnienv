@@ -65,23 +65,22 @@ The config file is discovered by walking up the directory tree from the current
 working directory.
 
 These fields are supported:
-* `system`: the OS version of environment to use. At this time only Ubuntu is
-  supported, and only using the series names, so `jammy` for Ubuntu 22.04 and
-  `noble` for Ubuntu 24.04 and so on. Defaults to the `DEFAULT_SERIES`
-  environment variable if set.
-* `system` (map form): specify a custom launch image. For example:
-  ```yaml
-  system:
-    jammy:
-      image: ubuntu:j
-  ```
-* `virtualization` (optional): use a `container` (default) or `vm`.
-* `label` (optional): the prefix for the environment name, this is inferred
-  from the basename of the `project` config. The full LXD instance name is
-  `<label>-<system>`.
-* `project` (optional): which directory to mount read-write in the environment.
-  If unspecified, this is set to the parent directory of `.omnienv.yaml`.
-* `backend` (optional): which backend to use. Only `lxd` is implemented.
+
+| Field | Description |
+|-------|-------------|
+| `system` | the OS version of environment to use. At this time only Ubuntu is supported, and only using the series names, so `jammy` for Ubuntu 22.04 and `noble` for Ubuntu 24.04 and so on. Defaults to the `DEFAULT_SERIES` environment variable if set. |
+| `virtualization` | use a `container` (default) or `vm`. |
+| `label` | the prefix for the environment name, this is inferred from the basename of the `project` config. The full LXD instance name is `<label>-<system>`. |
+| `project` | which directory to mount read-write in the environment. If unspecified, this is set to the parent directory of `.omnienv.yaml`. |
+| `backend` | which backend to use. Only `lxd` is implemented. |
+
+The `system` field's map form can specify a custom launch image. For example:
+
+```yaml
+system:
+  jammy:
+    image: ubuntu:j
+```
 
 The deprecated keys `basedir` and `series` are accepted but produce a warning.
 
