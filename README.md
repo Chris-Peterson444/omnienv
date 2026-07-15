@@ -26,7 +26,7 @@ Usable but expect breaking changes. Config file format under active development.
 
     go install github.com/dbungert/omnienv/cmd/oe@latest
 
-## usage
+## quick start
 
 1. Identify a project directory you would like to associate with a container or
    vm.
@@ -34,18 +34,35 @@ Usable but expect breaking changes. Config file format under active development.
 ```yaml
 system: noble
 ```
-3. Run `oe --launch`. The container will be created, the project directory
-   mounted at `/project` in that environment, and an interactive shell will
-   start in the same directory you are in right now (but in the environment).
-4. Standard LXD management commands can be used with the container. For
-   instance, this container can be deleted with `lxc delete myproject-noble`,
-   where `myproject` is the basename of the directory containing
-   `.omnienv.yaml`.
-5. Return to this same instance later by running `oe` from the directory with
-   `.omnienv.yaml` or lower.
-6. To run a non-interactive command inside the environment, pass it after `--`:
-   `oe -- make build`. Positional arguments after a flag terminator or after
-   non-option args are treated as a command to execute.
+3. Run `oe --launch`. The container will be created and the project directory
+   will be mounted at `/project` in that environment
+
+## usage examples
+
+```
+oe --launch
+```
+
+> Create the environment instance, and shell into the instance when ready.
+
+```
+oe
+```
+
+> Shell into an existing instance, first starting if needed.
+
+```
+oe make
+```
+
+> Shell into instance, run `make`, and return the exit code.
+
+```
+lxc remove foo-resolute
+```
+
+> Standard LXD management commands can be used with the container. In this
+> example, delete the container for the foo project of series resolute.
 
 ## options
 
